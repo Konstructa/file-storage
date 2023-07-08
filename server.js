@@ -1,19 +1,23 @@
-import { createServer } from 'net';
-const HOST = 'localhost';
-const PORT = 8081;
+const net = require('net');
 
-const server = createServer((socket) => {
+const HOST = 'localhost';
+const PORT = 8083;
+
+const server = new net.Server();
+
+server.on('connection', (socket) => {
   console.log(`Nova conexão: ${socket.remoteAddress}:${socket.remotePort}`);
   socket.write('agent');
 
   socket.on('data', (data) => {
     const message = data.toString();
     console.log(`Mensagem de ${socket.remoteAddress}:${socket.remotePort}: ${message}`);
+
     server.getConnections((err, count) => {
       if (err) throw err;
-      server.connections.forEach((conn) => {
-        if (conn !== socket) {
-          conn.write(message);
+      server.clients.forEach((client) => {
+        if (client !== socket) {
+          client.write(message);
         }
       });
     });
@@ -25,5 +29,5 @@ const server = createServer((socket) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Server listening on ${HOST}:${PORT}`);
+  console.log(`Servidor principal ouvindo em ${HOST}:${PORT}`);
 });
