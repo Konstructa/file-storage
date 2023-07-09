@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Konstructa/file-storage/issues"
   },
-  "homepage": "https://github.com/Konstructa/file-storage#readme"
+  "homepage": "https://github.com/Konstructa/file-storage#readme",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  }
 }

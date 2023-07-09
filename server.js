@@ -1,203 +1,56 @@
-const { createServer } = require('net');
-const fs = require('fs');
-const path = require('path');
+// Criado em: 01/07/2023
+// Última modificação: 06/07/2023
+// Autores: Diego Anjos
+//          Glauber Gouveia
+//          Laisa Pereira
+//          Victor Rafael
+//          Milena Limoeiro
+// Disciplina: MATA59 - Redes de Computadores
+// Professor: Gustavo Bittencourt Figueiredo 
+// Universidade Federal do Bahia - UFBA
+// Node.js v12.22.9
+// Descrição: Servidor
 
-const HOST = 'localhost';
-const PORT = 8000;
+const net = require('net'); // https://nodejs.org/api/net.html
 
-const replicaRegistry = {};
+const HOST = 'localhost'; // Endereço do servidor
+const PORT = 8083; // Porta do servidor
 
+const server = new net.Server(); // Cria um novo servidor
+server.clients = []; // Cria um array para armazenar os clientes conectados
 
+server.on('connection', (socket) => { // Trata eventos de conexão
+  console.log(`Nova conexão: ${socket.remoteAddress}:${socket.remotePort}`); // Exibe o endereço e a porta do cliente
+  server.clients.push(socket); // Adiciona o cliente ao array de clientes
+  socket.write('agent'); // Envia a mensagem 'agent' para o cliente
 
-const server = new net.Server();
-
-server.on('connection', (socket) => {
-  console.log(`Nova conexão: ${socket.remoteAddress}:${socket.remotePort}`);
-  socket.write('agent');
-
-  socket.on('data', (data) => {
-    const message = data.toString();
-    console.log(`Mensagem de ${socket.remoteAddress}:${socket.remotePort}: ${message}`);
-
-    const [command, fileName, level] = message.split('|');
-    if (command === '1') {
-      // Depositar arquivo
-      const filePath = path.join(__dirname, fileName);
-      const writeStream = fs.createWriteStream(filePath);
-      console.log(replicaRegistry)
-
-      if (!(fileName in replicaRegistry) && level > 0) {
-        createReplicas(fileName, level);
-        console.log(`Arquivo ${fileName} depositado com sucesso`);
-      } else if (fileName in replicaRegistry && level > replicaRegistry[fileName].length) {
-        const numReplicasToAdd = level - replicaRegistry[fileName].length;
-        addReplicas(fileName, numReplicasToAdd);
-        console.log(`Arquivo ${fileName} já existe, adicionando ${numReplicasToAdd} réplicas`);
-      } else if (fileName in replicaRegistry && level < replicaRegistry[fileName].length) {
-        const numReplicasToRemove = replicaRegistry[fileName].length - level;
-        removeReplicas(fileName, numReplicasToRemove);
-        console.log(`Arquivo ${fileName} possui ${level} réplicas, removendo ${numReplicasToRemove} réplicas`);
-      } else if (fileName in replicaRegistry && level == replicaRegistry[fileName].length) {
-        console.log(`Arquivo ${fileName} já possui ${level} réplicas`);
-        return;
-      }
-
-     console.log(replicaRegistry)
-      /* socket.pipe(writeStream);
-       */
-    } else if (command === '2') {
-      // Recuperar arquivo
-      if (fileName in replicaRegistry) {
-        console.log(`Arquivo ${fileName} recuperado`);
-        // Lógica de recuperação do arquivo
-      } else {
-        console.log(`Arquivo ${fileName} não encontrado`);
-      }
-    }
+  socket.on('error', (err) => { // Trata eventos de erro
+    console.log(`Erro no servidor: ${err.message}`); // Exibe o erro
   });
 
-  socket.on('end', () => {
-    console.log(`Conexão fechada: ${socket.remoteAddress}:${socket.remotePort}`);
-  });
-});
+  socket.on('data', (data) => { // Trata eventos de recebimento de dados
+    const message = data.toString(); // Converte os dados recebidos em string
+    console.log(`Recebendo dados do cliente: ${message}`); // Exibe a mensagem recebida
+    console.log(`Mensagem de ${socket.remoteAddress}:${socket.remotePort}: ${message}`); // Exibe a mensagem recebida
 
-function createReplicas(fileName, numReplicas) {
-  const replicas = [];
-  const fileDir = path.dirname(fileName);
-  const fileBaseName = path.basename(fileName);
-
-  for (let i = 0; i < numReplicas; i++) {
-    const replicaName = `${fileDir}/${fileBaseName}.replica-${i + 1}`;
-    if (fs.existsSync(replicaName)) {
-      console.log(`Réplica ${replicaName} já existe. Ignorando...`);
-    } else {
-      replicas.push(replicaName);
-    }
-  }
-
-  if (replicas.length > 0) {
-    replicaRegistry[fileName] = replicas;
-    console.log(`${replicas.length} réplicas criadas para o arquivo ${fileName}`);
-    replicateFile(fileName, replicas);
-  }
-}
-
-/* function addReplicas(fileName, allFiles, numReplicas) {
-  const replicas = [];
-  const allReplicas = allFiles
-  for (let i = numReplicas; i < allReplicas; i++) {
-    const replicaName = `${fileName}.replica-${i + 1}`;
-    replicas.push(replicaName);
-  }
-  replicaRegistry[fileName] = replicas;
-  console.log(`${numReplicas} réplicas adicionadas para o arquivo ${fileName}`);
-  replicateFile(fileName, replicas);
-}
- */
-
-function addReplicas(fileName) {
-  const replicas = replicaRegistry[fileName] || [];
-  const currentReplicas = replicas.length;
-  const numAdditionalReplicas = currentReplicas;
-  const newReplicas = [];
-
-  for (let i = 0; i < numAdditionalReplicas; i++) {
-    const replicaName = `${fileName}.replica-${currentReplicas + i + 1}`;
-    newReplicas.push(replicaName);
-  }
-
-  replicaRegistry[fileName] = replicas.concat(newReplicas);
-  console.log(`${numAdditionalReplicas} réplicas adicionadas para o arquivo ${fileName}`);
-}
-
-
-/* function removeReplicas(fileName, numReplicas) {
-  const replicas = replicaRegistry[fileName] || [];
-  const currentReplicas = replicas.length;
-  const numReplicasToRemove = Math.max(0, currentReplicas - numReplicas);
-  if (numReplicasToRemove > 0) {
-
-    for (let i = 0; i < numReplicasToRemove; i++) {
-      const replicaName = `${fileName}.replica-${currentReplicas - i}`;
-      replicas.push(replicaName);
-    }
-    const removedReplicas = replicas.splice(-numReplicasToRemove);
-    console.log(`${numReplicasToRemove} réplicas removidas para o arquivo ${fileName}`);
-    console.log(`Réplicas removidas: ${removedReplicas}`);
-    deleteFile(replicaName, removedReplicas);
-  }
-} */
-/* 
-function removeReplicas(fileName, numReplicasToRemove) {
-  const replicas = replicaRegistry[fileName] || [];
-  console.log(replicas.length) 
-
-  if (numReplicasToRemove > 0) {
-    const removedReplicas = replicas.splice(-numReplicasToRemove);
-    console.log(`${numReplicasToRemove} réplicas removidas para o arquivo ${fileName}`);
-    console.log(`Réplicas removidas: ${removedReplicas}`);
-
-    deleteFile(fileName, removeReplicas);
-    console.log(removedReplicas)
-  }
-}
- */
-
-function removeReplicas(fileName) {
-  const replicas = replicaRegistry[fileName] || [];
-  const numReplicasToRemove = replicas.length;
-
-  if (numReplicasToRemove > 0) {
-    const removedReplicas = replicas.splice(-numReplicasToRemove);
-    console.log(`${numReplicasToRemove} réplicas removidas para o arquivo ${fileName}`);
-    console.log(`Réplicas removidas: ${removedReplicas}`);
-
-    removedReplicas.forEach((replica) => {
-      const replicaPath = path.join(__dirname, replica);
-      deleteFile(replicaPath);
+    server.getConnections((err, count) => { // Obtém o número de clientes conectados
+      if (err) throw err; // Trata erros
+      server.clients.forEach((client) => { // Loop para enviar a mensagem para todos os clientes conectados
+        console.log(`Enviando mensagem para o cliente: ${message}`); // Exibe a mensagem enviada
+        if (client !== socket) { // Verifica se o cliente é diferente do cliente que enviou a mensagem
+          client.write(message); // Envia a mensagem para o cliente
+        }
+      });
     });
-  }
-}
-
-
-
-
-function replicateFile(fileName, replicas) {
-  const filePath = path.join(__dirname, fileName);
-  console.log(filePath)
-
-  replicas.forEach((replica) => {
-    const replicaPath = path.join(__dirname, replica);
-    fs.copyFileSync(filePath, replicaPath);
   });
 
-  console.log(`Arquivo ${filePath} replicado para as réplicas: ${replicas.join(', ')}`);
-}
-    
-function deleteFile(fileName, replicas) {
-  const fileDir = path.dirname(fileName);
-  const fileBaseName = path.basename(fileName);
-
-  for (let i = 0; i < replicas.length; i++) {
-    const replicaName = replicas[i];
-    const replicaPath = path.join(fileDir, replicaName);
-    fs.unlink(replicaPath, (err) => {
-      if (err) {
-        console.error(`Erro ao excluir a réplica ${replicaName} do arquivo ${fileName}:`, err);
-      } else {
-        console.log(`Réplica ${replicaName} do arquivo ${fileName} removida com sucesso`);
-      }
-    });
-  }
-}
-
-
- 
-
-server.listen(PORT, HOST, () => {
-  console.log(`Servidor principal ouvindo em ${HOST}:${PORT}`);
+  socket.on('end', () => { // Trata eventos de desconexão
+    console.log(`Conexão fechada: ${socket.remoteAddress}:${socket.remotePort}`); // Exibe o endereço e a porta do cliente
+  });
 });
 
-server.on('error', (err) => {
-  console.error('Erro no servidor:', err);
+server.listen(PORT, HOST, () => { // Inicia o servidor
+  console.log(`Servidor principal ouvindo em ${HOST}:${PORT}`); // Exibe uma mensagem de sucesso
 });
+
+
