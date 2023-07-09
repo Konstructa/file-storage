@@ -7,8 +7,8 @@ let current_mode = ''; // Variável para armazenar o modo atual
 let current_file_name = ''; // Variável para armazenar o nome do arquivo atual
 
 const HOST = 'localhost'; // Endereço do servidor
-const PORT = 8083; // Porta do servidor
-const agent = 'client'; // Nome do agente
+const PORT = 8000; 
+
 
 const rl = readline.createInterface({ // Cria uma interface para leitura de dados
   input: process.stdin, // Define a entrada de dados
@@ -16,7 +16,7 @@ const rl = readline.createInterface({ // Cria uma interface para leitura de dado
 });
 
 const client = net.createConnection(PORT, HOST); // Cria uma conexão com o servidor
-const FILE_SERVER_PORT = 8082; // Porta do servidor de arquivos
+const FILE_SERVER_PORT = 8000; // Porta do servidor de arquivos
 const fileServerClient = net.createConnection(FILE_SERVER_PORT, HOST); // Cria uma conexão com o servidor de arquivos
 
 client.on('error', (err) => { // Trata erros de conexão
@@ -47,7 +47,7 @@ fileServerClient.on('data', (data) => { // Trata eventos de recebimento de dados
   if (current_mode === 'retrieve') { // Verifica se o modo atual é de recuperação de arquivo
     // Salvar o conteúdo do arquivo na raiz do programa
     const file_path = path.join(__dirname, current_file_name); // Define o caminho do arquivo
-    fs.writeFile(file_path, data, (err) => { // Salva o arquivo
+    fs.writeFile(file_path, message, (err) => { // Salva o arquivo
       if (err) { // Verifica se houve erro
         console.log(`Erro ao salvar o arquivo: ${err.message}`); // Exibe o erro
       } else { // Caso não haja erro

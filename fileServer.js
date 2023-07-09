@@ -1,9 +1,10 @@
+
 const net = require('net'); // Importa o módulo net
 const fs = require('fs'); // Importa o módulo fs
 const path = require('path'); // Importa o módulo path
 
 const HOST = 'localhost'; // Endereço do servidor principal
-const PORT = 8082; // Porta do servidor principal
+const PORT = 8000 // Porta do servidor principal
 
 const fileServer = new net.Server(); // Cria um novo servidor
 fileServer.clients = []; // Cria um array para armazenar os clientes conectados
@@ -22,6 +23,7 @@ fileServer.on('connection', (socket) => { // Evento de conexão
       // Depósito de arquivo
       const file_name = parts[1]; // Nome do arquivo
       const num_replicas = parseInt(parts[2]); // Número de réplicas
+     
       for (let i = 1; i <= num_replicas; i++) { // Loop para criar as réplicas
         const location = `location${i}`; // Nome da pasta
         const location_path = path.join(__dirname, location); // Caminho da pasta
@@ -39,14 +41,15 @@ fileServer.on('connection', (socket) => { // Evento de conexão
             });
           }
         });
-      }
+      } 
+     
       // Verificar e atualizar o número de réplicas
       updateReplicas(file_name, num_replicas); // Função para atualizar o número de réplicas
     } else if (parts[0] === '2') { // Se a mensagem for '2'
       // Recuperação de arquivo
       const file_name = parts[1]; // Nome do arquivo
       let file_found = false; // Variável para verificar se o arquivo foi encontrado
-      for (let i = 1; i <= 100; i++) { // Loop para procurar o arquivo
+      for (let i = 0; i <= 100; i++) { // Loop para procurar o arquivo
         const location = `location${i}`; // Nome da pasta
         const file_path = path.join(__dirname, location, file_name); // Caminho do arquivo
         if (fs.existsSync(file_path)) { // Verifica se o arquivo existe
@@ -128,3 +131,4 @@ fileServer.on('connection', (socket) => { // Evento de conexão
 fileServer.listen(PORT, HOST, () => { // Inicia o servidor de arquivos
   console.log(`Servidor de arquivos ouvindo em ${HOST}:${PORT}`); // Exibe a mensagem de sucesso
 });
+
