@@ -9,7 +9,7 @@
 // Professor: Gustavo Bittencourt Figueiredo 
 // Universidade Federal do Bahia - UFBA
 // Node.js v12.22.9
-// Descrição: Servidor
+// 
 
 const net = require('net'); // https://nodejs.org/api/net.html
 
@@ -50,7 +50,7 @@ server.on('connection', (socket) => { // Trata eventos de conexão
 });
 
 server.listen(PORT, HOST, () => { // Inicia o servidor
-  console.log(`Servidor principal ouvindo em ${HOST}:${PORT}`); // Exibe uma mensagem de sucesso
+  console.log(`Servidor ouvindo em ${HOST}:${PORT}`); // Exibe uma mensagem de sucesso
 });
 
 
