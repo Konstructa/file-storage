@@ -1,36 +1,44 @@
 const net = require('net');
-const createConnection = net.createConnection;
-const fs = require('fs');
-const path = require('path');
 
 const HOST = 'localhost';
+<<<<<<< HEAD
 const PORT = 8000;
 const agent = 'server';
+=======
+const PORT = 8082;
+>>>>>>> 015c32f467a5b7127d9fdacccc0dd907d17a34ce
 
-const client = createConnection(PORT, HOST);
+const fileServer = new net.Server();
 
-client.on('connect', () => {
-  console.log(`Connected to ${HOST}:${PORT}`);
+fileServer.on('connection', (socket) => {
+  console.log(`Nova conexão: ${socket.remoteAddress}:${socket.remotePort}`);
+  socket.write('agent');
+
+  socket.on('data', (data) => {
+    const message = data.toString();
+    console.log(`Mensagem de ${socket.remoteAddress}:${socket.remotePort}: ${message}`);
+
+    if (message === 'file') {
+      socket.write('Recebendo arquivo...');
+      // Aqui você pode adicionar o código para lidar com o recebimento do arquivo
+    } else {
+      fileServer.getConnections((err, count) => {
+        if (err) throw err;
+        fileServer.clients.forEach((client) => {
+          if (client !== socket) {
+            client.write(message);
+          }
+        });
+      });
+    }
+  });
+
+  socket.on('end', () => {
+    console.log(`Conexão fechada: ${socket.remoteAddress}:${socket.remotePort}`);
+  });
 });
 
-client.on('data', (data) => {
-  const message = data.toString();
-  console.log(message);
+fileServer.listen(PORT, HOST, () => {
+  console.log(`Servidor de arquivos ouvindo em ${HOST}:${PORT}`);
 });
 
-client.on('end', () => {
-  console.log('Disconnected from server');
-});
-
-function sendMessage(message) {
-  client.write(message);
-}
-
-function processMessage(message) {
-  // Process the message
-}
-
-client.on('data', (data) => {
-  const message = data.toString();
-  processMessage(message);
-});

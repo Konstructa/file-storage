@@ -7,7 +7,11 @@ const PORT = 8000;
 
 const replicaRegistry = {};
 
-const server = createServer((socket) => {
+
+
+const server = new net.Server();
+
+server.on('connection', (socket) => {
   console.log(`Nova conexão: ${socket.remoteAddress}:${socket.remotePort}`);
   socket.write('agent');
 
@@ -191,7 +195,7 @@ function deleteFile(fileName, replicas) {
  
 
 server.listen(PORT, HOST, () => {
-  console.log(`Server listening on ${HOST}:${PORT}`);
+  console.log(`Servidor principal ouvindo em ${HOST}:${PORT}`);
 });
 
 server.on('error', (err) => {
