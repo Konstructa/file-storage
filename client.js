@@ -2,12 +2,9 @@ const net = require('net');
 const readline = require('readline');
 const fs = require('fs');
 const path = require('path');
-const uuid = require('uuid');
-const os = require('os');
 
 const HOST = 'localhost';
-const PORT = 8081;
-const agent = 'client';
+const PORT = 8000;
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -32,26 +29,30 @@ client.on('end', () => {
 });
 
 function sendMessage(message) {
-  client.write(message);
+  try {
+    client.write(message);
+  } catch (err) {
+    console.error('Erro ao enviar mensagem:', err);
+  }
 }
 
 function startupMenu() {
   rl.question('Menu:\n1. Depositar arquivo\n2. Recuperar arquivo\n3. Sair\nEscolha: ', (choice) => {
     switch (choice) {
       case '1':
-        rl.question('Nome do arquivo: ', (file_name) => {
+        rl.question('Nome do arquivo: ', (fileName) => {
           rl.question('Número de cópias: ', (level) => {
-            const file_path = path.join(__dirname, file_name);
-            const file_size = fs.statSync(file_path).size;
-            sendMessage(`1|${file_name}|${level}|${file_size}`);
-            fs.createReadStream(file_path).pipe(client);
+            const filePath = path.join(__dirname, fileName);
+            const fileSize = fs.statSync(filePath).size;
+            sendMessage(`1|${fileName}|${level}|${fileSize}`);
+            fs.createReadStream(filePath).pipe(client);
             startupMenu();
           });
         });
         break;
       case '2':
-        rl.question('Nome do arquivo: ', (file_name) => {
-          sendMessage(`2|${file_name}|0|0`);
+        rl.question('Nome do arquivo: ', (fileName) => {
+          sendMessage(`2|${fileName}|0|0`);
           startupMenu();
         });
         break;
@@ -65,3 +66,12 @@ function startupMenu() {
     }
   });
 }
+
+client.on('error', (err) => {
+  console.error('Erro no cliente:', err);
+});
+
+rl.on('close', () => {
+  process.exit(0);
+});
+
