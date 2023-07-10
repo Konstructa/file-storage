@@ -43,11 +43,11 @@ fileServerClient.on('connect', () => { // Trata eventos de conexão
 });
 
 fileServerClient.on('data', (data) => { // Trata eventos de recebimento de dados
-  const message = data.toString(); // Converte os dados recebidos para string
-  if (current_mode === 'retrieve') { // Verifica se o modo atual é de recuperação de arquivo
+  const message = data.toString(); 
+  if (current_mode === 'retrieve') { o
     // Salvar o conteúdo do arquivo na raiz do programa
-    const file_path = path.join(__dirname, current_file_name); // Define o caminho do arquivo
-    fs.writeFile(file_path, message, (err) => { // Salva o arquivo
+    const file_path = path.join(__dirname, current_file_name); 
+    fs.writeFile(file_path, message, (err) => { 
       if (err) { // Verifica se houve erro
         console.log(`Erro ao salvar o arquivo: ${err.message}`); // Exibe o erro
       } else { // Caso não haja erro
@@ -57,12 +57,12 @@ fileServerClient.on('data', (data) => { // Trata eventos de recebimento de dados
   }
 });
 
-fileServerClient.on('end', () => { // Trata eventos de desconexão
+fileServerClient.on('end', () => { 
   console.log('Disconnected from file server'); // Exibe uma mensagem de desconexão
 });
 
 function sendMessage(message) { // Função para enviar mensagens para o servidor
-  fileServerClient.write(message) // Envia a mensagem para o servidor
+  fileServerClient.write(message) 
 }
 
 function startupMenu() { // Função para exibir o menu inicial
@@ -81,25 +81,25 @@ function startupMenu() { // Função para exibir o menu inicial
             } catch (err) { // Caso haja erro
               console.log(`Erro ao ler o arquivo: ${err.message}`); // Exibe o erro
             }
-            startupMenu(); // Exibe o menu inicial
+            startupMenu(); 
           });
         });
-        break; // Finaliza o switch
+        break; 
 
-      case '2': // Caso a opção seja 2
+      case '2': 
         current_mode = 'retrieve'; // Define o modo atual como recuperação
-        rl.question('Nome do arquivo: ', (file_name) => { // Pergunta o nome do arquivo
-          current_file_name = file_name; // Define o nome do arquivo atual
-          sendMessage(`2|${file_name}|0|0`); // Envia a mensagem para o servidor
-          startupMenu(); // Exibe o menu inicial
+        rl.question('Nome do arquivo: ', (file_name) => { 
+          current_file_name = file_name; 
+          sendMessage(`2|${file_name}|0|0`); 
+          startupMenu(); 
         });
-        break; // Finaliza o switch
-      case '3': // Caso a opção seja 3
-        client.end(); // Finaliza a conexão com o servidor
-        break; // Finaliza o switch
-      default: // Caso a opção não seja reconhecida
-        console.log('Opção não reconhecida'); // Exibe uma mensagem de erro
-        startupMenu(); // Exibe o menu inicial
+        break; 
+      case '3': 
+        client.end(); 
+        break; 
+      default: 
+        console.log('Opção não reconhecida'); 
+        startupMenu(); 
         break;
     }
   });
