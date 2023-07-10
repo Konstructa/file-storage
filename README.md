@@ -37,10 +37,6 @@ node client.js
 
 Isso iniciará os servidores principal e de arquivos, bem como um cliente. Você pode abrir mais terminais e executar `node client.js` para iniciar mais clientes.
 
-## Exemplos de Uso
-
-Incluir captura de tela aqui
-
 ## Completude
 
 O projeto atende aos requisitos especificados na especificação do trabalho, implementando um "depósito de arquivo com replicação" seguindo o modelo cliente-servidor. A aplicação funciona em dois modos: modo depósito e modo recuperação, permitindo ao usuário depositar ou recuperar arquivos. Além disso, a aplicação é capaz de manter a consistência das réplicas, aumentando ou diminuindo a quantidade de réplicas conforme a última solicitação do cliente.
